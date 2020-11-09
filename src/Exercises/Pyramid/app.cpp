@@ -23,16 +23,30 @@ void SimpleShapeApplication::init() {
     }
 
     std::vector<GLfloat> vertices = {
-            -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.8f, //0
-            0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.8f, //1
-            0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.8f, //2 roof vertices
+            -0.5f, 0.0f, 0.0f, 0.8f, 0.0f, 0.0f, //0
+            0.5f, 0.0f, 0.0f, 0.8f, 0.0f, 0.0f, //1
+            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,//2 red front
 
-            -0.5f, 0.0f, 0.0f, 0.0f, 0.8f, 0.0f, //3
-            0.5f, 0.0f, 0.0f, 0.0f, 0.8f, 0.0f, //4
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.8f, 0.0f, //5
+            0.5f, 0.0f, 0.0f, 0.0f, 0.8f, 0.0f,
+            0.5f, 0.0f, -1.0f, 0.0f, 0.8f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, // green right
 
-            0.5f, -0.5f, 0.0f, 0.0f, 0.8f, 0.0f, // 6 walls vertices
+            0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.8f,
+            -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.8f,
+            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, // blue back
 
+            -0.5f, 0.0f, -1.0f, 0.8f, 0.8f, 0.0f,
+            0.5f, 0.0f, -1.0f, 0.8f, 0.8f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f // yellow left
+    };
+
+    std::vector<GLushort> indices = {
+            0, 1, 2,
+            3, 4, 5,
+            6, 7, 8,
+            9, 10, 11,
+            12, 13, 14,
+            12, 13, 15
     };
 
     GLuint v_buffer_handle;
@@ -40,12 +54,6 @@ void SimpleShapeApplication::init() {
     glBindBuffer(GL_ARRAY_BUFFER, v_buffer_handle);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    std::vector<GLushort> indices = {
-            0, 1, 2,
-            3, 4, 5,
-            4, 5, 6
-    };
 
     GLuint idx_buffer_handle;
     glGenBuffers(1, &idx_buffer_handle);
@@ -72,8 +80,8 @@ void SimpleShapeApplication::init() {
         std::cout << "Cannot find Modifiers uniform block in program" << std::endl;
     } else { glUniformBlockBinding(program, u_modifiers_index, 0); }
 
-    float light_intensity = 0.7f;
-    float light_color[] = {0.0f, 0.4f, 1.f};
+    float light_intensity = 1.f;
+    float light_color[] = {1.f, 1.f, 1.f};
 
     GLuint ubo_handle(0u);
     glGenBuffers(1, &ubo_handle);
@@ -87,19 +95,19 @@ void SimpleShapeApplication::init() {
 
     //PVM
     auto u_matrices_index = glGetUniformBlockIndex(program, "Matrices");
-    if (u_matrices_index  == GL_INVALID_INDEX) {
+    if (u_matrices_index == GL_INVALID_INDEX) {
         std::cout << "Cannot find Matrices uniform block in program" << std::endl;
-    } else { glUniformBlockBinding(program, u_matrices_index , 1); }
+    } else { glUniformBlockBinding(program, u_matrices_index, 1); }
 
     glm::mat4 Model(1.0f);
     glm::mat4 View = glm::lookAt(
-            glm::vec3(0.0f, 0.0f, 1.0f), //front (0.0f, 0.0f, 1.0f)
-            glm::vec3(0.0f, 0.4f, 0.0f),
+            glm::vec3(0.0f, 3.2f, 1.0f), //front (0.0f, 0.0f, 1.0f)
+            glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(0.0f, 1.0f, 0.0f)
 
     );
     glm::mat4 Projection = glm::perspective(
-            glm::radians(100.f), 650.0f / 480.0f, 0.1f, 100.f
+            glm::radians(80.f), 650.0f / 480.0f, 0.1f, 100.f
     );
 
     glm::mat4 PVM = Projection * View * Model;

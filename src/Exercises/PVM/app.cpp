@@ -72,8 +72,8 @@ void SimpleShapeApplication::init() {
         std::cout << "Cannot find Modifiers uniform block in program" << std::endl;
     } else { glUniformBlockBinding(program, u_modifiers_index, 0); }
 
-    float light_intensity = 0.f;
-    float light_color[] = {0.f, 0.f, 0.f};
+    float light_intensity = 0.7f;
+    float light_color[] = {0.0f, 0.4f, 1.f};
 
     GLuint ubo_handle(0u);
     glGenBuffers(1, &ubo_handle);
@@ -83,17 +83,17 @@ void SimpleShapeApplication::init() {
     glBufferSubData(GL_UNIFORM_BUFFER, 4 * sizeof(float), 3 * sizeof(float), light_color);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    glBindBufferBase(GL_UNIFORM_BUFFER, u_modifiers_index, ubo_handle);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo_handle);
 
     //PVM
     auto u_matrices_index = glGetUniformBlockIndex(program, "Matrices");
-    if (u_modifiers_index == GL_INVALID_INDEX) {
+    if (u_matrices_index  == GL_INVALID_INDEX) {
         std::cout << "Cannot find Matrices uniform block in program" << std::endl;
-    } else { glUniformBlockBinding(program, u_modifiers_index, 0); }
+    } else { glUniformBlockBinding(program, u_matrices_index , 1); }
 
     glm::mat4 Model(1.0f);
     glm::mat4 View = glm::lookAt(
-            glm::vec3(0.5f, 0.0f, 1.0f), //front (0.0f, 0.0f, 1.0f)
+            glm::vec3(0.0f, 0.0f, 1.0f), //front (0.0f, 0.0f, 1.0f)
             glm::vec3(0.0f, 0.4f, 0.0f),
             glm::vec3(0.0f, 1.0f, 0.0f)
 
@@ -108,9 +108,9 @@ void SimpleShapeApplication::init() {
     glBindBuffer(GL_UNIFORM_BUFFER, ubo_handle_pvm);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &PVM);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBuffer(GL_UNIFORM_BUFFER, 1);
 
-    glBindBufferBase(GL_UNIFORM_BUFFER, u_matrices_index, ubo_handle_pvm);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo_handle_pvm);
 
 
     glClearColor(0.81f, 0.81f, 0.8f, 1.0f);

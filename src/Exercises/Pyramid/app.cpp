@@ -23,30 +23,36 @@ void SimpleShapeApplication::init() {
     }
 
     std::vector<GLfloat> vertices = {
-            -0.5f, 0.0f, 0.0f, 0.8f, 0.0f, 0.0f, //0
-            0.5f, 0.0f, 0.0f, 0.8f, 0.0f, 0.0f, //1
-            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,//2 red front
+            -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.5f, 0.0f, -1.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, 0.0f, -1.0f, 1.0f, 1.0f, 1.0f, //base
 
-            0.5f, 0.0f, 0.0f, 0.0f, 0.8f, 0.0f,
-            0.5f, 0.0f, -1.0f, 0.0f, 0.8f, 0.0f,
-            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, // green right
+            -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, //front
 
-            0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.8f,
-            -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.8f,
-            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, // blue back
+            0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            0.5f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, //right
 
-            -0.5f, 0.0f, -1.0f, 0.8f, 0.8f, 0.0f,
-            0.5f, 0.0f, -1.0f, 0.8f, 0.8f, 0.0f,
-            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f // yellow left
+            0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+            -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //back
+
+            -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,//left
+
     };
 
     std::vector<GLushort> indices = {
             0, 1, 2,
-            3, 4, 5,
-            6, 7, 8,
-            9, 10, 11,
-            12, 13, 14,
-            12, 13, 15
+            0, 2, 3,
+            4, 5, 6,
+            7, 8, 9,
+            10, 11, 12,
+            13, 14, 15
     };
 
     GLuint v_buffer_handle;
@@ -101,7 +107,7 @@ void SimpleShapeApplication::init() {
 
     glm::mat4 Model(1.0f);
     glm::mat4 View = glm::lookAt(
-            glm::vec3(0.0f, 3.2f, 1.0f), //front (0.0f, 0.0f, 1.0f)
+            glm::vec3(0.5f, 2.8f, 1.5f), //front 0.0f, 0.0f, 1.0f | all walls 0.5f, 2.8f, 1.5f
             glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(0.0f, 1.0f, 0.0f)
 
@@ -132,6 +138,6 @@ void SimpleShapeApplication::init() {
 
 void SimpleShapeApplication::frame() {
     glBindVertexArray(vao_);
-    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, nullptr);
     glBindVertexArray(0);
 }

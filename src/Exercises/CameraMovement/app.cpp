@@ -12,15 +12,29 @@
 
 void SimpleShapeApplication::init() {
 
-
     auto program = xe::create_program(std::string(PROJECT_DIR) + "/shaders/base_vs.glsl",
                                       std::string(PROJECT_DIR) + "/shaders/base_fs.glsl");
-
 
     if (!program) {
         std::cerr << "Cannot create program from " << std::string(PROJECT_DIR) + "/shaders/base_vs.glsl" << " and ";
         std::cerr << std::string(PROJECT_DIR) + "/shaders/base_fs.glsl" << " shader files" << std::endl;
     }
+
+    auto *camera = new Camera();
+    set_camera(camera);
+    set_controler(new CameraControler(camera));
+
+    int w, h;
+    std::tie(w, h) = frame_buffer_size();
+    aspect_ = (float) w / h;
+    fov_ = glm::pi<float>() / 4.0;
+    near_ = 0.1f;
+    far_ = 100.0f;
+    camera_->perspective(fov_, aspect_, near_, far_); //P
+    camera_->look_at(glm::vec3(0.0f, 1.7f, 1.0f),
+                     glm::vec3(0.0f, 0.0f, -0.5f),
+                     glm::vec3(0.0f, 1.0f, 0.0f)); //V
+    M_ = glm::mat4(1.0f);
 
     std::vector<GLfloat> vertices = {
             -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f,
@@ -104,18 +118,24 @@ void SimpleShapeApplication::init() {
         std::cout << "Cannot find Matrices uniform block in program" << std::endl;
     } else { glUniformBlockBinding(program, u_matrices_index, 1); }
 
-    glm::mat4 Model(1.0f);
-    glm::mat4 View = glm::lookAt(
-            glm::vec3(0.5f, 2.8f, 1.5f), //front 0.0f, 0.0f, 1.0f | all walls 0.5f, 2.8f, 1.5f
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
+    glClearColor(0.81f, 0.81f, 0.8f, 1.0f);
+    glViewport(0, 0, w, h);
 
-    );
-    glm::mat4 Projection = glm::perspective(
-            glm::radians(80.f), 650.0f / 480.0f, 0.1f, 100.f
-    );
+    glEnable(GL_DEPTH_TEST);
 
-    glm::mat4 PVM = Projection * View * Model;
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+
+    glUseProgram(program);
+}
+
+void SimpleShapeApplication::frame() {
+    glBindVertexArray(vao_);
+    glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, nullptr);
+    glBindVertexArray(0);
+
+    glm::mat4 PVM = camera_->projection() * camera_->view() * M_;
     GLuint ubo_handle_pvm(0u);
     glGenBuffers(1, &ubo_handle_pvm);
     glBindBuffer(GL_UNIFORM_BUFFER, ubo_handle_pvm);
@@ -124,19 +144,38 @@ void SimpleShapeApplication::init() {
     glBindBuffer(GL_UNIFORM_BUFFER, 1);
 
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo_handle_pvm);
-
-
-    glClearColor(0.81f, 0.81f, 0.8f, 1.0f);
-    int w, h;
-    std::tie(w, h) = frame_buffer_size();
-    glViewport(0, 0, w, h);
-
-    glEnable(GL_DEPTH_TEST);
-    glUseProgram(program);
 }
 
-void SimpleShapeApplication::frame() {
-    glBindVertexArray(vao_);
-    glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, nullptr);
-    glBindVertexArray(0);
+void SimpleShapeApplication::framebuffer_resize_callback(int w, int h) {
+    Application::framebuffer_resize_callback(w, h);
+    glViewport(0, 0, w, h);
+    camera_->set_aspect((float) w / (float) h);
+}
+
+void SimpleShapeApplication::scroll_callback(double xoffset, double yoffset) {
+    Application::scroll_callback(xoffset, yoffset);
+    camera()->zoom(yoffset / 10.0f);
+}
+
+void SimpleShapeApplication::mouse_button_callback(int button, int action, int mods) {
+    Application::mouse_button_callback(button, action, mods);
+
+    if (controler_) {
+        double x, y;
+        glfwGetCursorPos(window_, &x, &y);
+
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+            controler_->LMB_isPressed(x, y);
+
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+            controler_->LMB_isReleased(x, y);
+    }
+
+}
+
+void SimpleShapeApplication::cursor_position_callback(double x, double y) {
+    Application::cursor_position_callback(x, y);
+    if (controler_) {
+        controler_->mouse_moved(x, y);
+    }
 }

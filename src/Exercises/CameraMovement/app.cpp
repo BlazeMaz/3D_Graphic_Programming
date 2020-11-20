@@ -22,7 +22,7 @@ void SimpleShapeApplication::init() {
 
     auto *camera = new Camera();
     set_camera(camera);
-    set_controler(new CameraControler(camera));
+    set_controler(new CameraController(camera));
 
     int w, h;
     std::tie(w, h) = frame_buffer_size();
@@ -160,22 +160,22 @@ void SimpleShapeApplication::scroll_callback(double xoffset, double yoffset) {
 void SimpleShapeApplication::mouse_button_callback(int button, int action, int mods) {
     Application::mouse_button_callback(button, action, mods);
 
-    if (controler_) {
+    if (controller_) {
         double x, y;
         glfwGetCursorPos(window_, &x, &y);
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-            controler_->LMB_isPressed(x, y);
+            controller_->LMB_isPressed(x, y);
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-            controler_->LMB_isReleased(x, y);
+            controller_->LMB_isReleased(x, y);
     }
 
 }
 
 void SimpleShapeApplication::cursor_position_callback(double x, double y) {
     Application::cursor_position_callback(x, y);
-    if (controler_) {
-        controler_->mouse_moved(x, y);
+    if (controller_) {
+        controller_->mouse_moved(x, y);
     }
 }

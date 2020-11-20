@@ -14,9 +14,13 @@
 #include "glad/glad.h"
 #include "camera.h"
 #include "cameraControler.h"
+#include "pyramid.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
+
+class time_point;
 
 class SimpleShapeApplication : public xe::Application {
 public:
@@ -43,9 +47,11 @@ public:
 
     CameraController *controler(Camera camera) {return controller_;}
 
+    Pyramid *pyramid() {return pyramid_;}
+
 private:
     GLuint vao_;
-    GLuint u_pvm_buffer_;
+    GLuint ubo_handle_pvm;
 
     float fov_;
     float aspect_;
@@ -58,4 +64,10 @@ private:
 
     Camera *camera_;
     CameraController *controller_;
+    Pyramid *pyramid_;
+
+    std::chrono::steady_clock::time_point start_;
+    float rotation_period_;
+    float moon_rotation_period_;
+    float satelite_rotation_period_;
 };

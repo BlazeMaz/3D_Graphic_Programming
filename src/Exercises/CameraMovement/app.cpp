@@ -31,8 +31,8 @@ void SimpleShapeApplication::init() {
     near_ = 0.1f;
     far_ = 100.0f;
     camera_->perspective(fov_, aspect_, near_, far_); //P
-    camera_->look_at(glm::vec3(0.0f, 1.7f, 1.0f),
-                     glm::vec3(0.0f, 0.0f, -0.5f),
+    camera_->look_at(glm::vec3(0.0f, 0.0f, 2.0f),
+                     glm::vec3(0.0f, 0.0f, 0.0f),
                      glm::vec3(0.0f, 1.0f, 0.0f)); //V
     M_ = glm::mat4(1.0f);
 

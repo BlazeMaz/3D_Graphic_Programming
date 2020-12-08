@@ -10,7 +10,7 @@ void CameraController::set_camera(Camera *camera) {
 
 void CameraController::rotate_camera(float dx, float dy) {
     camera_->rotate_around_center(-scale_ * dy, camera_->x());
-    camera_->rotate_around_center(-scale_ * dx, glm::vec3{0.0f, 0.0f, 1.0f});
+    camera_->rotate_around_center(-scale_ * dx, camera_->y());
 }
 
 void CameraController::mouse_moved(float x, float y) {

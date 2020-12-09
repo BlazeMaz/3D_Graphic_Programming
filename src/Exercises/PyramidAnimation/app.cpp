@@ -46,8 +46,9 @@ void SimpleShapeApplication::init() {
 
     start_ = std::chrono::steady_clock::now();
     rotation_period_ = 4.0f;
+    earth_rotation_period_ = 20.0f;
     moon_rotation_period_ = 10.0f;
-    satelite_rotation_period_ = 2.0f;
+    satellite_rotation_period_ = 2.0f;
 
     glGenBuffers(1, &ubo_handle_pvm);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo_handle_pvm);
@@ -67,30 +68,38 @@ void SimpleShapeApplication::init() {
 void SimpleShapeApplication::frame() {
     auto now = std::chrono::steady_clock::now();
     auto elapsed_time = std::chrono::duration_cast<std::chrono::duration<float>>(now - start_).count();
-    auto rotation_angle = 2.0f * glm::pi<float>() * elapsed_time / rotation_period_;
-    glm::vec3 axis = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::mat4 R = glm::rotate(M_, rotation_angle, axis);
-    glm::mat4 O = glm::translate(M_, {10.0f * cos(rotation_angle), 0.0f, 6.0f * sin(rotation_angle)});
 
-    float r_moon = 3.0f;
-    glm::mat4 O_moon = glm::translate(M_, {r_moon * cos(rotation_angle), 0.0f, r_moon * sin(rotation_angle)});
-    glm::mat4 Scale_moon = glm::scale(M_, glm::vec3(0.5f, 0.5f, 0.5f));
-    glm::mat4 R_moon = glm::rotate(M_, 2.0f * glm::pi<float>() * elapsed_time / moon_rotation_period_, axis);
+    glm::mat4 R_earth = get_self_rotation(elapsed_time, rotation_period_);
+    glm::mat4 O_earth = glm::translate(M_, {10.0f * cos(get_rotation_angle(elapsed_time, earth_rotation_period_)),
+                                            0.0f,
+                                            8.0f * sin(get_rotation_angle(elapsed_time, earth_rotation_period_))});
+    glm::mat4 PVM = camera_->projection() * camera_->view() * O_earth * R_earth * M_;
 
-    float r_satelite = 1.5f;
-    glm::vec3 satelite_axis = glm::vec3(0.0f, 0.0f, 1.0f);
-    glm::mat4 O_satelite = glm::translate(M_,{r_satelite * cos(rotation_angle), r_satelite * sin(rotation_angle), 0.0f});
-    glm::mat4 Scale_satelite = glm::scale(M_, glm::vec3(0.25f, 0.25f, 0.25f));
-    glm::mat4 R_satelite = glm::rotate(M_, 2.0f * glm::pi<float>() * elapsed_time / satelite_rotation_period_,
-                                       satelite_axis);
+    glm::mat4 S_moon = glm::scale(M_, glm::vec3(0.5f, 0.5f, 0.5f));
+    glm::mat4 R_moon = get_self_rotation(elapsed_time, -moon_rotation_period_);
+    glm::mat4 O_moon = glm::translate(M_, {3.0f * cos(get_rotation_angle(elapsed_time, moon_rotation_period_)),
+                                           0.0f,
+                                           3.0f * sin(get_rotation_angle(elapsed_time, moon_rotation_period_))});
+    glm::mat4 PVM_moon = camera_->projection() * camera_->view() * O_earth * O_moon * R_moon * S_moon;
 
-    glm::mat4 PVM = camera_->projection() * camera_->view() * O * M_ * R;
-    glm::mat4 PVMoon = camera_->projection() * camera_->view() * O * O_moon * Scale_moon * R_moon;
-    glm::mat4 PVMSatelite = camera_->projection() * camera_->view() * O * O_satelite * R_satelite * Scale_satelite;
+    glm::mat4 S_satellite = glm::scale(M_, glm::vec3(0.25f, 0.25f, 0.25f));
+    glm::mat4 R_satellite = get_self_rotation(elapsed_time, satellite_rotation_period_);
+    glm::mat4 O_satellite = glm::translate(M_, {1.5 * cos(get_rotation_angle(elapsed_time, satellite_rotation_period_)),
+                                                1.5 * sin(get_rotation_angle(elapsed_time, satellite_rotation_period_)),
+                                                0.0f});
+    glm::mat4 PVM_satellite = camera_->projection() * camera_->view() * O_earth * O_satellite * R_satellite * S_satellite;
 
     pyramid_->draw(PVM, ubo_handle_pvm);
-    pyramid_->draw(PVMoon, ubo_handle_pvm);
-    pyramid_->draw(PVMSatelite, ubo_handle_pvm);
+    pyramid_->draw(PVM_moon, ubo_handle_pvm);
+    pyramid_->draw(PVM_satellite, ubo_handle_pvm);
+}
+
+float SimpleShapeApplication::get_rotation_angle(float elapsed_time, float rotation_period) {
+    return 2.0f * glm::pi<float>() * elapsed_time / rotation_period;
+}
+
+glm::mat4 SimpleShapeApplication::get_self_rotation(float elapsed_time, float rotation_period) {
+    return glm::rotate(M_, get_rotation_angle(elapsed_time, rotation_period), axisY_);
 }
 
 void SimpleShapeApplication::framebuffer_resize_callback(int w, int h) {

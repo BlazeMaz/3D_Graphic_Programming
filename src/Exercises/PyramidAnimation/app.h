@@ -45,9 +45,9 @@ public:
 
     Camera *camera() { return camera_; }
 
-    CameraController *controler(Camera camera) {return controller_;}
+    CameraController *controler(Camera camera) { return controller_; }
 
-    Pyramid *pyramid() {return pyramid_;}
+    Pyramid *pyramid() { return pyramid_; }
 
 private:
     GLuint vao_;
@@ -66,8 +66,15 @@ private:
     CameraController *controller_;
     Pyramid *pyramid_;
 
+    glm::vec3 axisY_ = glm::vec3(0.0f, 1.0f, 0.0f);
+
     std::chrono::steady_clock::time_point start_;
     float rotation_period_;
     float moon_rotation_period_;
-    float satelite_rotation_period_;
+    float satellite_rotation_period_;
+    float earth_rotation_period_;
+
+    float get_rotation_angle(float elapsed_time, float rotation_period);
+
+    glm::mat4 get_self_rotation(float elapsed_time, float rotation_period);
 };

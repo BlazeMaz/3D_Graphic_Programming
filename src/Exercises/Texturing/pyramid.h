@@ -34,7 +34,7 @@ private:
 
     std::vector<GLushort> indices = {
             0, 2, 1,
-            0,3,2,
+            0, 3, 2,
             0, 1, 4,
             1, 2, 5,
             2, 3, 6,

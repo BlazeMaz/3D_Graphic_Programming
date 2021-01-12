@@ -53,6 +53,7 @@ void SimpleShapeApplication::init() {
     glEnable(GL_CULL_FACE);
     //glFrontFace(GL_CW);
     glFrontFace(GL_CCW);
+    glFrontFace(GL_CW);
     glCullFace(GL_BACK);
 
     glUseProgram(program);

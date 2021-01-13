@@ -22,7 +22,7 @@ void SimpleShapeApplication::init() {
     auto *camera = new Camera();
     set_camera(camera);
 
-    pyramid_ = new Pyramid();
+    quad_ = new Quad();
 
     int w, h;
     std::tie(w, h) = frame_buffer_size();
@@ -40,10 +40,30 @@ void SimpleShapeApplication::init() {
     auto u_matrices_index = glGetUniformBlockIndex(program, "Matrices");
     if (u_matrices_index == GL_INVALID_INDEX) {
         std::cout << "Cannot find Matrices uniform block in program" << std::endl;
-    } else { glUniformBlockBinding(program, u_matrices_index, 1); }
+    } else { glUniformBlockBinding(program, u_matrices_index, 0); }
 
     glGenBuffers(1, &u_pvm_buffer_);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_pvm_buffer_);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 3 * sizeof(glm::vec4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, u_pvm_buffer_);
+
+    //Light
+    light_.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    light_.a = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f);
+
+    //Light buffor
+    auto u_light_index = glGetUniformBlockIndex(program, "Light");
+    if (u_light_index == GL_INVALID_INDEX) {
+        std::cout << "Cannot find Matrices uniform block in program" << std::endl;
+    } else { glUniformBlockBinding(program, u_light_index, 2); }
+
+    glGenBuffers(1, &u_light_buffer_);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_light_buffer_);
+    glBufferData(GL_UNIFORM_BUFFER, 3 * sizeof(glm::vec4) + sizeof(glm::vec3), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 2, u_light_buffer_);
+
 
     glClearColor(0.81f, 0.81f, 0.8f, 1.0f);
     glViewport(0, 0, w, h);
@@ -66,8 +86,15 @@ void SimpleShapeApplication::init() {
 }
 
 void SimpleShapeApplication::frame() {
-    glm::mat4 PVM = camera_->projection() * camera_->view() * M_;
-    pyramid_->draw(PVM, u_pvm_buffer_);
+    glm::mat4 P = camera_->projection();
+    glm::mat4 VM = camera_->view()*M_;
+    glm::mat4 N = glm::transpose((glm::inverse(glm::mat3(VM))));
+
+    light_.position = VM * glm::vec4 (0.0f, 0.5f, 0.0f, 1.0f);
+
+    quad_->draw(P,VM,N, u_pvm_buffer_);
+
+
 }
 
 void SimpleShapeApplication::framebuffer_resize_callback(int w, int h) {

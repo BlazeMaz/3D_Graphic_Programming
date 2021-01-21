@@ -31,9 +31,9 @@ void SimpleShapeApplication::init() {
     near_ = 0.1f;
     far_ = 100.0f;
     camera_->perspective(fov_, aspect_, near_, far_); //P
-    camera_->look_at(glm::vec3(0.5f, 2.8f, 1.5f),
+    camera_->look_at(glm::vec3(0.0f, 3.0f, 0.0f),
                      glm::vec3(0.0f, 0.0f, 0.0f),
-                     glm::vec3(0.0f, 1.0f, 0.0f)); //V
+                     glm::vec3(0.1f, 1.0f, 0.0f)); //V
     M_ = glm::mat4(1.0f);
 
     //PVM
@@ -43,7 +43,7 @@ void SimpleShapeApplication::init() {
     } else { glUniformBlockBinding(program, u_matrices_index, 0); }
 
     glGenBuffers(1, &u_pvm_buffer_);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_pvm_buffer_);
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 3 * sizeof(glm::vec4), nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, u_pvm_buffer_);
@@ -51,6 +51,7 @@ void SimpleShapeApplication::init() {
     //Light
     light_.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     light_.a = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f);
+    light_.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
 
     //Light buffor
     auto u_light_index = glGetUniformBlockIndex(program, "Light");
@@ -60,10 +61,9 @@ void SimpleShapeApplication::init() {
 
     glGenBuffers(1, &u_light_buffer_);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_light_buffer_);
-    glBufferData(GL_UNIFORM_BUFFER, 3 * sizeof(glm::vec4) + sizeof(glm::vec3), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, 3 * 4 * sizeof(float) + 3 * sizeof(float), nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 2, u_light_buffer_);
-
 
     glClearColor(0.81f, 0.81f, 0.8f, 1.0f);
     glViewport(0, 0, w, h);
@@ -77,24 +77,38 @@ void SimpleShapeApplication::init() {
 
     glUseProgram(program);
 
-    auto  u_diffuse_map_location = glGetUniformLocation(program,"diffuse_map");
-    if(u_diffuse_map_location==-1) {
-        std::cerr<<"Cannot find uniform diffuse_map\n";
+    auto u_diffuse_map_location = glGetUniformLocation(program, "diffuse_map");
+    if (u_diffuse_map_location == -1) {
+        std::cerr << "Cannot find uniform diffuse_map\n";
     } else {
-        glUniform1ui(u_diffuse_map_location,0);
+        glUniform1ui(u_diffuse_map_location, 0);
     }
 }
 
 void SimpleShapeApplication::frame() {
     glm::mat4 P = camera_->projection();
-    glm::mat4 VM = camera_->view()*M_;
-    glm::mat4 N = glm::transpose((glm::inverse(glm::mat3(VM))));
+    glm::mat4 VM = camera_->view();
+    auto R = glm::mat3(VM);
+    glm::mat4 N = glm::transpose(glm::inverse(R));
 
-    light_.position = VM * glm::vec4 (0.0f, 0.5f, 0.0f, 1.0f);
+    light_.position = VM * glm::vec4(0.0f, 0.5f, 0.0f, 1.0f);
 
-    quad_->draw(P,VM,N, u_pvm_buffer_);
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &P);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &VM);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec4), &N[0]);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4), sizeof(glm::vec3), &N[1]);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 2 * sizeof(glm::vec4), sizeof(glm::vec3), &N[2]);
+    glBufferSubData(GL_UNIFORM_BUFFER, 3 * sizeof(glm::mat4), sizeof(glm::vec3), &light_.ambient);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+    glBindBuffer(GL_UNIFORM_BUFFER, u_light_buffer_);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec4), &light_.position);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec4), sizeof(glm::vec4), &light_.color);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(glm::vec4), &light_.a);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+    quad_->draw();
 }
 
 void SimpleShapeApplication::framebuffer_resize_callback(int w, int h) {

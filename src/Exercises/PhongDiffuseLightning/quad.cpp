@@ -32,10 +32,9 @@ Quad::Quad() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid *>(0));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          reinterpret_cast<GLvoid *>(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid *>(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2,3,GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), reinterpret_cast<GLvoid*>(5*sizeof(GLfloat)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid *>(5 * sizeof(GLfloat)));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
@@ -57,19 +56,11 @@ Quad::Quad() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Quad::draw(glm::mat4 &P, glm::mat4 &VM, glm::mat4 &N, GLuint ubo_handle_pvm) {
-    glBindBuffer(GL_UNIFORM_BUFFER, ubo_handle_pvm);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &P);
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof (glm::mat4), &VM);
-    glBufferSubData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4), sizeof (glm::mat4), &N);
-
-    glBindBuffer(GL_UNIFORM_BUFFER, 1);
-
+void Quad::draw() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,diffuse_texture_);
-
     glBindVertexArray(vao_);
-    glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_SHORT, nullptr);
     glBindVertexArray(0);
-
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

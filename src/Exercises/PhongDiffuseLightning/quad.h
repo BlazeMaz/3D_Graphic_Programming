@@ -15,7 +15,7 @@ public:
 
     ~Quad();
 
-    void draw(glm::mat4 &P, glm::mat4 &VM, glm::mat4 &N, GLuint ubo_handle_pvm);
+    void draw();
 
 private:
     GLuint vao_;

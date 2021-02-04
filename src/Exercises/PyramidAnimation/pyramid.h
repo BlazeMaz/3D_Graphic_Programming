@@ -13,7 +13,7 @@ class Pyramid {
 public:
     Pyramid();
     ~Pyramid();
-    void draw(glm::mat4 &PVM, GLuint u_pvm_buffer_);
+    void draw();
 private:
     GLuint vao_;
     GLuint buffer_[2];

@@ -36,12 +36,7 @@ Pyramid::~Pyramid() {
     //Tu usuwamy VAO i bufory
 }
 
-void Pyramid::draw(glm::mat4 &PVM, GLuint ubo_handle_pvm) {
-    glBindBuffer(GL_UNIFORM_BUFFER, ubo_handle_pvm);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &PVM);
-    glBindBuffer(GL_UNIFORM_BUFFER, 1);
-
+void Pyramid::draw() {
     glBindVertexArray(vao_);
     glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, nullptr);
     glBindVertexArray(0);

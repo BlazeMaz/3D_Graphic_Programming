@@ -57,6 +57,12 @@ void SimpleShapeApplication::init() {
 
     glUseProgram(program);
 
+    glGenBuffers(1, &u_pvm_buffer_);
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 1);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_pvm_buffer_);
+
     auto  u_diffuse_map_location = glGetUniformLocation(program,"diffuse_map");
     if(u_diffuse_map_location==-1) {
         std::cerr<<"Cannot find uniform diffuse_map\n";
@@ -67,7 +73,12 @@ void SimpleShapeApplication::init() {
 
 void SimpleShapeApplication::frame() {
     glm::mat4 PVM = camera_->projection() * camera_->view() * M_;
-    pyramid_->draw(PVM, u_pvm_buffer_);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &PVM);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    pyramid_->draw();
 }
 
 void SimpleShapeApplication::framebuffer_resize_callback(int w, int h) {

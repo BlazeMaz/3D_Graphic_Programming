@@ -51,7 +51,7 @@ public:
 
 private:
     GLuint vao_;
-    GLuint ubo_handle_pvm;
+    GLuint u_pvm_buffer_;
 
     float fov_;
     float aspect_;
@@ -77,4 +77,6 @@ private:
     float get_rotation_angle(float elapsed_time, float rotation_period);
 
     glm::mat4 get_self_rotation(float elapsed_time, float rotation_period);
+
+    void drawPyramid(glm::mat4 PVM);
 };

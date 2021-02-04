@@ -38,6 +38,12 @@ void SimpleShapeApplication::init() {
                      glm::vec3(0.0f, 1.0f, 0.0f)); //V
     M_ = glm::mat4(1.0f);
 
+    glGenBuffers(1, &u_pvm_buffer_);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_pvm_buffer_);
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 1);
+
     //PVM
     auto u_matrices_index = glGetUniformBlockIndex(program, "Matrices");
     if (u_matrices_index == GL_INVALID_INDEX) {
@@ -49,9 +55,6 @@ void SimpleShapeApplication::init() {
     earth_rotation_period_ = 20.0f;
     moon_rotation_period_ = 10.0f;
     satellite_rotation_period_ = 2.0f;
-
-    glGenBuffers(1, &ubo_handle_pvm);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo_handle_pvm);
 
     glClearColor(0.81f, 0.81f, 0.8f, 1.0f);
     glViewport(0, 0, w, h);
@@ -89,9 +92,9 @@ void SimpleShapeApplication::frame() {
                                                 0.0f});
     glm::mat4 PVM_satellite = camera_->projection() * camera_->view() * O_earth * O_satellite * R_satellite * S_satellite;
 
-    pyramid_->draw(PVM, ubo_handle_pvm);
-    pyramid_->draw(PVM_moon, ubo_handle_pvm);
-    pyramid_->draw(PVM_satellite, ubo_handle_pvm);
+    drawPyramid(PVM);
+    drawPyramid(PVM_moon);
+    drawPyramid(PVM_satellite);
 }
 
 float SimpleShapeApplication::get_rotation_angle(float elapsed_time, float rotation_period) {
@@ -134,4 +137,11 @@ void SimpleShapeApplication::cursor_position_callback(double x, double y) {
     if (controller_) {
         controller_->mouse_moved(x, y);
     }
+}
+
+void SimpleShapeApplication::drawPyramid(glm::mat4 PVM){
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &PVM);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    pyramid_->draw();
 }

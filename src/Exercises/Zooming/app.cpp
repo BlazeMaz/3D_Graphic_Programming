@@ -91,6 +91,12 @@ void SimpleShapeApplication::init() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    glGenBuffers(1, &u_pvm_buffer_);
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 1);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, u_pvm_buffer_);
+
     //Uniforms
     auto u_modifiers_index = glGetUniformBlockIndex(program, "Modifiers");
     if (u_modifiers_index == GL_INVALID_INDEX) {
@@ -134,14 +140,9 @@ void SimpleShapeApplication::frame() {
     glBindVertexArray(0);
 
     glm::mat4 PVM = camera_->projection() * camera_->view() * M_;
-    GLuint ubo_handle_pvm(0u);
-    glGenBuffers(1, &ubo_handle_pvm);
-    glBindBuffer(GL_UNIFORM_BUFFER, ubo_handle_pvm);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, u_pvm_buffer_);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &PVM);
-    glBindBuffer(GL_UNIFORM_BUFFER, 1);
-
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo_handle_pvm);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void SimpleShapeApplication::framebuffer_resize_callback(int w, int h) {
